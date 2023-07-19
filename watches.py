@@ -9,6 +9,7 @@ class Datatype(Enum):
     DOUBLE = 5
     STRING = 6
     BYTEARRAY = 7
+    BOOL = 8
 
 class MemoryWatch:
     def __init__(self, name: str, address: int, datatype: Datatype) -> None:
@@ -29,6 +30,10 @@ class MemoryWatch:
             s += cur_char
             i += 1
         return s
+    
+    @staticmethod
+    def read_bool(address:int) -> bool:
+        return not not dme.read_byte(address)
 
     @staticmethod
     def write_halfword(address:int, value:int) -> None:
@@ -42,6 +47,10 @@ class MemoryWatch:
             dme.write_byte(address+i, ord(e))
         dme.write_byte(address+len(value), 0) # add the null terminator at the end
     
+    @staticmethod
+    def write_bool(address:int, value:bool) -> None:
+        dme.write_byte(address, int(value))
+    
     _accessor_methods = {
         Datatype.BYTE: (dme.read_byte, dme.write_byte),
         Datatype.HALFWORD: (read_halfword, write_halfword),
@@ -49,6 +58,7 @@ class MemoryWatch:
         Datatype.FLOAT: (dme.read_float, dme.write_float),
         Datatype.DOUBLE: (dme.read_double, dme.write_double),
         Datatype.STRING: (read_string, write_string),
+        Datatype.BOOL: (read_bool, write_bool),
     }
 
     def get_accessors(self):
@@ -92,10 +102,6 @@ class BitFieldMemoryWatch(MemoryWatch):
         else:
             res &= ~self.bitmask
         accessors[1](self.address, res)
-
-class BoolMemoryWatch(BitFieldMemoryWatch):
-    def __init__(self, name: str, address: int):
-        super().__init__(name, address, Datatype.BYTE, 1)
 
 class GSWFMemoryWatch(BitFieldMemoryWatch):
     GSWF_BASE_ADDRESS = 0x804e2694

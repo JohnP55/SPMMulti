@@ -22,7 +22,7 @@ d = MemoryWatch("some float", 0x80FB0008, Datatype.FLOAT)
 e = MemoryWatch("some double", 0x80FB000C, Datatype.DOUBLE)
 f = MemoryWatch("some string", 0x80FB0014, Datatype.STRING)
 g = ByteArrayMemoryWatch("some byte array", 0x80FB0050, 5)
-h = BoolMemoryWatch("some bool", 0x804CEAED)
+h = MemoryWatch("some bool", 0x804CEAED, Datatype.BOOL)
 
 print(g.read())
 a.write(0xea)
