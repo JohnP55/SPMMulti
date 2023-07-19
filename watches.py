@@ -9,7 +9,6 @@ class Datatype(Enum):
     DOUBLE = 5
     STRING = 6
     BYTEARRAY = 7
-    BITFIELD = 8
 
 class MemoryWatch:
     def __init__(self, name: str, address: int, datatype: Datatype) -> None:
@@ -61,6 +60,8 @@ class MemoryWatch:
         return self.get_accessors()[0](self.address)
     
     def write(self, value):
+        if isinstance(value, Enum):
+            value = value.value
         self.get_accessors()[1](self.address, value)
 
 class ByteArrayMemoryWatch(MemoryWatch):
@@ -91,6 +92,10 @@ class BitFieldMemoryWatch(MemoryWatch):
         else:
             res &= ~self.bitmask
         accessors[1](self.address, res)
+
+class BoolMemoryWatch(BitFieldMemoryWatch):
+    def __init__(self, name: str, address: int):
+        super().__init__(name, address, Datatype.BYTE, 1)
 
 class GSWFMemoryWatch(BitFieldMemoryWatch):
     GSWF_BASE_ADDRESS = 0x804e2694
