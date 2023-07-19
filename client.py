@@ -2,7 +2,7 @@ import dolphin_memory_engine as dme
 import socket
 import json
 import time
-from memory import *
+from watches import *
 
 def send_data(sock, data):
     # Send dictionary over a socket.
