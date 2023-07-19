@@ -52,13 +52,16 @@ class MemoryWatch:
         Datatype.STRING: (read_string, write_string),
     }
 
+    def get_accessors(self):
+        return MemoryWatch._accessor_methods[self.datatype]
+
     def read(self):
         if self.datatype == Datatype.BYTEARRAY:
             return dme.read_bytes(self.address, self.len)
-        return (MemoryWatch._accessor_methods[self.datatype][0])(self.address)
+        return self.get_accessors()[0](self.address)
     
     def write(self, value):
-        (MemoryWatch._accessor_methods[self.datatype][1])(self.address, value)
+        self.get_accessors()[1](self.address, value)
 
 class ByteArrayMemoryWatch(MemoryWatch):
     def __init__(self, name: str, address: int, size: int = 0) -> None:
@@ -73,22 +76,27 @@ class ByteArrayMemoryWatch(MemoryWatch):
         dme.write_bytes(self.address, value)
 
 class BitFieldMemoryWatch(MemoryWatch):
-    def __init__(self, name: str, address: int, bitmask:int = 0):
-        super().__init__(name, address, Datatype.BITFIELD)
+    def __init__(self, name: str, address: int, datatype:Datatype, bitmask:int = 0):
+        super().__init__(name, address, datatype)
         self.bitmask = bitmask
     
     def read(self) -> bool:
-        return dme.read_byte(self.address) & self.bitmask == self.bitmask
+        return self.get_accessors()[0](self.address) & self.bitmask == self.bitmask
     
     def write(self, value:bool) -> None:
-        res = dme.read_byte(self.address)
+        accessors = self.get_accessors()
+        res = accessors[0](self.address)
         if value:
             res |= self.bitmask
         else:
             res &= ~self.bitmask
-        dme.write_byte(self.address, res)
+        accessors[1](self.address, res)
 
-
+class GSWFMemoryWatch(BitFieldMemoryWatch):
+    GSWF_BASE_ADDRESS = 0x804e2694
+    def __init__(self, name: str, gswf_id:int) -> None:
+        q,r = divmod(gswf_id, 32)
+        super().__init__(name, GSWFMemoryWatch.GSWF_BASE_ADDRESS + q*4, Datatype.WORD, 1 << r)
 
 watches = [
     MemoryWatch("Camera Mode", 0x8076ae48, Datatype.HALFWORD),

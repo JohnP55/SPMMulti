@@ -41,7 +41,7 @@ print(e.read())
 print(f.read())
 print(g.read())
 
-welderberg300Pipe = BitFieldMemoryWatch("FlipFlop Pipe", 0x804E26D5, 0x40)
+welderberg300Pipe = GSWFMemoryWatch("FlipFlop Pipe", 534)
 welderberg300Pipe.write(False)
 
 input("Press enter to set it to 1")
